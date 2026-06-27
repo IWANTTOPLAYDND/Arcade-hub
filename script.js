@@ -1,11 +1,11 @@
 function unlock(){
-  console.log("UNLOCK TRIGGERED");
+  lockscreen.style.opacity = "0";
+  lockscreen.style.pointerEvents = "none";
 
-  lockscreen.style.display = "none";
-  desktop.style.display = "block";
-
-  console.log("LOCKSCREEN:", lockscreen);
-  console.log("DESKTOP:", desktop);
+  setTimeout(() => {
+    lockscreen.style.display = "none";
+    desktop.style.display = "flex";
+  }, 200);
 }
 
 lockscreen.addEventListener("click", unlock);
