@@ -1,9 +1,56 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Debug Test</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neon OS Safe Build</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: monospace;
+  color: white;
+  height: 100vh;
+  overflow: hidden;
+  background: radial-gradient(circle at top, #2a1b3d, #120b1a, #07050c);
+}
+
+/* SIMPLE GLASS BOX */
+.card {
+  width: 420px;
+  padding: 20px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(167,139,250,0.25);
+  backdrop-filter: blur(10px);
+  text-align: center;
+  margin: auto;
+  margin-top: 15vh;
+}
+
+button {
+  padding: 10px 14px;
+  margin: 6px;
+  border-radius: 10px;
+  border: none;
+  background: #a78bfa;
+  cursor: pointer;
+}
+
+button:hover {
+  transform: scale(1.05);
+}
+</style>
 </head>
+
 <body>
-  <h1 style="color:white;background:black;">HTML IS LOADING</h1>
+
+<div class="card">
+  <h1>🧪 NEON OS SAFE MODE</h1>
+  <p>If you see this, everything works.</p>
+
+  <button onclick="alert('System OK')">Test Button</button>
+</div>
+
 </body>
 </html>
