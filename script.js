@@ -1,41 +1,23 @@
 window.onload = function () {
-const openWindows = {};
-  
-  // =========================
-  // 🔒 CORE ELEMENTS
-  // =========================
+
   const lockscreen = document.getElementById("lockscreen");
   const desktop = document.getElementById("desktop");
   const clock = document.getElementById("clock");
 
-  // safety check (prevents silent breaking)
-  if (!lockscreen || !desktop) {
-    alert("ERROR: Missing lockscreen or desktop in HTML");
-    return;
-  }
+  let z = 10;
+  const openWindows = {};
 
-  // =========================
-  // 🔓 UNLOCK SYSTEM
-  // =========================
+  // 🔓 UNLOCK
   function unlock() {
-    lockscreen.style.opacity = "0";
-    lockscreen.style.pointerEvents = "none";
-
-    setTimeout(() => {
-      lockscreen.style.display = "none";
-      desktop.style.display = "block";
-    }, 200);
+    lockscreen.style.display = "none";
+    desktop.style.display = "block";
   }
 
   lockscreen.onclick = unlock;
   document.addEventListener("keydown", unlock);
 
-  // =========================
   // 🕒 CLOCK
-  // =========================
   function updateClock() {
-    if (!clock) return;
-
     const now = new Date();
     clock.innerText = now.toLocaleTimeString([], {
       hour: "2-digit",
@@ -46,81 +28,37 @@ const openWindows = {};
   setInterval(updateClock, 1000);
   updateClock();
 
-  // =========================
-  // 🪟 WINDOW SYSTEM
-  // =========================
-  let z = 20;
-window.openApp = function (name) {
+  // 🪟 OPEN APP
+  window.openApp = function (name) {
 
-  // if already open → bring to front
-  if (openWindows[name]) {
-    bringToFront(openWindows[name]);
-    return;
-  }
+    if (openWindows[name]) {
+      bringToFront(openWindows[name]);
+      return;
+    }
 
-  const win = document.createElement("div");
-  win.className = "window";
-  win.style.zIndex = z++;
+    const win = document.createElement("div");
+    win.className = "window";
+    win.style.zIndex = z++;
 
-  let content = "";
+    let content = "";
 
-  if (name === "library") {
-    content = `
-      <div class="window-header">
-        🎮 Library
-        <div>
-          <span onclick="minimizeWindow('${name}')" style="cursor:pointer;">➖</span>
-          <span onclick="this.parentElement.parentElement.parentElement.remove(); closeWindow('${name}')" style="cursor:pointer;">✖</span>
-        </div>
-      </div>
-
-      <p>Game Library Window</p>
-    `;
-  }
-window.bringToFront = function(win){
-  win.style.zIndex = z++;
-};
-
-window.closeWindow = function(name){
-  delete openWindows[name];
-};
-
-window.minimizeWindow = function(name){
-  if (!openWindows[name]) return;
-  openWindows[name].style.display = "none";
-};
-  else if (name === "settings") {
-    content = `
-      <div class="window-header">
-        ⚙ Settings
-        <div>
-          <span onclick="minimizeWindow('${name}')">➖</span>
-          <span onclick="this.parentElement.parentElement.parentElement.remove(); closeWindow('${name}')">✖</span>
-        </div>
-      </div>
-
-      <p>Control Panel</p>
-    `;
-  }
-
-  win.innerHTML = content;
-  document.body.appendChild(win);
-
-  makeDraggable(win);
-
-  openWindows[name] = win;
-
-  bringToFront(win);
-};
-
-    else {
+    if (name === "library") {
       content = `
         <div class="window-header">
-          ❓ App
-          <span class="close" onclick="this.parentElement.parentElement.remove()">✖</span>
+          🎮 Library
+          <span onclick="this.parentElement.parentElement.remove(); closeWindow('library')">✖</span>
         </div>
+        <p>Game Library (coming soon)</p>
+      `;
+    }
 
-        <p>Unknown app: ${name}</p>
+    else if (name === "settings") {
+      content = `
+        <div class="window-header">
+          ⚙ Settings
+          <span onclick="this.parentElement.parentElement.remove(); closeWindow('settings')">✖</span>
+        </div>
+        <p>Settings Panel (coming soon)</p>
       `;
     }
 
@@ -128,31 +66,48 @@ window.minimizeWindow = function(name){
     document.body.appendChild(win);
 
     makeDraggable(win);
+    openWindows[name] = win;
+    bringToFront(win);
   };
 
-  // =========================
-  // 🖱 DRAG SYSTEM
-  // =========================
-  function makeDraggable(el) {
-    let isDown = false;
-    let offsetX = 0;
-    let offsetY = 0;
+  // 🔁 TOGGLE
+  window.toggleApp = function (name) {
+    const win = openWindows[name];
 
-    const header = el.querySelector(".window-header");
+    if (!win) return openApp(name);
+
+    win.style.display =
+      win.style.display === "none" ? "block" : "none";
+  };
+
+  // 🧠 WINDOW SYSTEM
+  function bringToFront(win) {
+    win.style.zIndex = z++;
+  }
+
+  function closeWindow(name) {
+    delete openWindows[name];
+  }
+
+  // 🖱 DRAGGING
+  function makeDraggable(win) {
+    let isDown = false;
+    let offsetX, offsetY;
+
+    const header = win.querySelector(".window-header");
 
     header.addEventListener("mousedown", (e) => {
       isDown = true;
-      offsetX = e.clientX - el.offsetLeft;
-      offsetY = e.clientY - el.offsetTop;
-
-      el.style.zIndex = z++;
+      offsetX = e.clientX - win.offsetLeft;
+      offsetY = e.clientY - win.offsetTop;
+      bringToFront(win);
     });
 
     document.addEventListener("mousemove", (e) => {
       if (!isDown) return;
 
-      el.style.left = (e.clientX - offsetX) + "px";
-      el.style.top = (e.clientY - offsetY) + "px";
+      win.style.left = (e.clientX - offsetX) + "px";
+      win.style.top = (e.clientY - offsetY) + "px";
     });
 
     document.addEventListener("mouseup", () => {
