@@ -1,63 +1,78 @@
+"use strict";
+
+/* =========================
+   🧠 NEON OS - CLEAN CORE
+========================= */
+
 const OS = {
   z: 10,
-  soundEnabled: true,
 
+  /* =========================
+     🚀 BOOT
+  ========================= */
   init() {
-    this.lock = document.getElementById("lockscreen");
-    this.desktop = document.getElementById("desktop");
+    this.cache();
+    this.lockSetup();
+    this.taskbarSetup();
 
-    this.setupLock();
-    this.setupTaskbar();
+    console.log("NeonOS booted clean 💜");
   },
 
-  /* 🔒 LOCK */
-  setupLock() {
-  if (!this.lock || !this.desktop) return;
+  /* =========================
+     📦 CACHE DOM
+  ========================= */
+  cache() {
+    this.lock = document.getElementById("lockscreen");
+    this.desktop = document.getElementById("desktop");
+  },
 
-  let unlocked = false;
+  /* =========================
+     🔒 LOCK SCREEN (ROBUST)
+  ========================= */
+  lockSetup() {
+    if (!this.lock || !this.desktop) {
+      console.error("Missing lock or desktop element");
+      return;
+    }
 
-  const unlock = () => {
-    if (unlocked) return;
-    unlocked = true;
+    let unlocked = false;
 
-    console.log("Unlocked 🔓");
+    const unlock = () => {
+      if (unlocked) return;
+      unlocked = true;
 
-    this.lock.style.opacity = "0";
-    this.lock.style.pointerEvents = "none";
+      console.log("Unlocked 🔓");
 
-    setTimeout(() => {
       this.lock.style.display = "none";
       this.desktop.style.display = "block";
-    }, 200);
-  };
+    };
 
-  // 🧼 remove accidental double bindings
-  this.lock.replaceWith(this.lock.cloneNode(true));
-  this.lock = document.getElementById("lockscreen");
+    this.lock.addEventListener("click", unlock);
+    document.addEventListener("keydown", unlock, { once: true });
+  },
 
-  this.lock.addEventListener("click", unlock);
-
-  document.addEventListener("keydown", unlock, { once: true });
-}
-  /* 📊 TASKBAR */
-  setupTaskbar() {
+  /* =========================
+     📊 TASKBAR SYSTEM
+  ========================= */
+  taskbarSetup() {
     document.addEventListener("click", (e) => {
       const app = e.target.dataset.app;
 
+      if (!app) return;
+
       if (app === "library") this.openLibrary();
       if (app === "settings") this.openSettings();
-
-      if (e.target.tagName === "BUTTON") {
-        this.playClick();
-      }
     });
   },
 
-  /* 🪟 WINDOW */
+  /* =========================
+     🪟 WINDOW ENGINE (STABLE)
+  ========================= */
   createWindow(title, content) {
     const win = document.createElement("div");
     win.className = "window";
 
+    win.style.position = "absolute";
     win.style.top = "120px";
     win.style.left = "120px";
     win.style.zIndex = ++this.z;
@@ -65,33 +80,39 @@ const OS = {
     win.innerHTML = `
       <div class="window-header">
         <span>${title}</span>
-        <button class="close">X</button>
+        <button class="close">✖</button>
       </div>
-      <div class="window-body">${content}</div>
+      <div class="window-body">
+        ${content}
+      </div>
     `;
 
     document.body.appendChild(win);
 
+    /* close */
     win.querySelector(".close").onclick = () => win.remove();
 
+    /* drag */
     this.makeDraggable(win);
 
     return win;
   },
 
-  /* 🖱 DRAG */
+  /* =========================
+     🖱 DRAG SYSTEM (SAFE)
+  ========================= */
   makeDraggable(win) {
     const header = win.querySelector(".window-header");
 
     let dragging = false;
-    let ox = 0;
-    let oy = 0;
+    let offsetX = 0;
+    let offsetY = 0;
 
     header.onmousedown = (e) => {
       dragging = true;
 
-      ox = e.clientX - win.offsetLeft;
-      oy = e.clientY - win.offsetTop;
+      offsetX = e.clientX - win.offsetLeft;
+      offsetY = e.clientY - win.offsetTop;
 
       win.style.zIndex = ++this.z;
     };
@@ -99,58 +120,51 @@ const OS = {
     document.onmousemove = (e) => {
       if (!dragging) return;
 
-      win.style.left = (e.clientX - ox) + "px";
-      win.style.top = (e.clientY - oy) + "px";
+      win.style.left = (e.clientX - offsetX) + "px";
+      win.style.top = (e.clientY - offsetY) + "px";
     };
 
-    document.onmouseup = () => dragging = false;
+    document.onmouseup = () => {
+      dragging = false;
+    };
   },
 
-  /* 🎮 APPS */
+  /* =========================
+     🎮 APPS
+  ========================= */
   openLibrary() {
-    this.createWindow("Library", `
+    this.createWindow("🎮 Library", `
       <button onclick="OS.openGame()">Clicker</button>
     `);
   },
 
   openSettings() {
-    this.createWindow("Settings", `
-      <p>System running</p>
+    this.createWindow("⚙ Settings", `
+      <p>NeonOS is running clean.</p>
     `);
   },
 
   openGame() {
     let count = 0;
 
-    const win = this.createWindow("Clicker", `
-      <p id="c">0</p>
-      <button id="b">Click</button>
+    const win = this.createWindow("🖱 Clicker", `
+      <p id="count">0</p>
+      <button id="btn">Click</button>
     `);
 
-    const c = win.querySelector("#c");
-    const b = win.querySelector("#b");
+    const countEl = win.querySelector("#count");
+    const btn = win.querySelector("#btn");
 
-    b.onclick = () => {
+    btn.onclick = () => {
       count++;
-      c.textContent = count;
-      this.playClick();
+      countEl.textContent = count;
     };
-  },
-
-  /* 🔊 SOUND */
-  playStartup() {
-    if (!this.soundEnabled) return;
-    const a = new Audio("assets/sounds/startup.mp3");
-    a.volume = 0.35;
-    a.play().catch(()=>{});
-  },
-
-  playClick() {
-    if (!this.soundEnabled) return;
-    const a = new Audio("assets/sounds/click.mp3");
-    a.volume = 0.15;
-    a.play().catch(()=>{});
   }
 };
 
-OS.init();
+/* =========================
+   🚀 START SAFE (IMPORTANT FIX)
+========================= */
+window.addEventListener("DOMContentLoaded", () => {
+  OS.init();
+});
